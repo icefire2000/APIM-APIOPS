@@ -1,0 +1,11 @@
+apimServiceName: [prod or any other target environment apim instance name goes here]
+namedValues:
+  - name: ratelimittest
+    properties:
+      displayName: ratelimittest
+      value: "20"
+  - name: test-openai-ai-gateway-gpt-4o-LLM
+    properties:
+      displayName: test-openai-ai-gateway-gpt-4o-LLM
+      secret: true
+      value: "1234567890abcdefg1234567890abcdefg"
