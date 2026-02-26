@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "scope": "/subscriptions/21289af5-b0bb-4008-9b98-c22245bcb24e/resourceGroups/api/providers/Microsoft.ApiManagement/service/apimyyj/products/starter",
+    "allowTracing": false,
+    "ownerId": "/subscriptions/21289af5-b0bb-4008-9b98-c22245bcb24e/resourceGroups/api/providers/Microsoft.ApiManagement/service/apimyyj/users/1",
+    "state": "active"
+  }
+}
