@@ -43,49 +43,32 @@ jobs:
           API_SPECIFICATION_FORMAT: ${{ github.event.inputs.API_SPECIFICATION_FORMAT }} 
           # AZURE_CLOUD_ENVIRONMENT: AzureChinaCloud
         run: |
-          Set-StrictMode -Version Latest
-          $ErrorActionPreference = "Stop"
-          $VerbosePreference = "Continue"
-          $InformationPreference = "Continue"
+          set -euo pipefail
 
-          Write-Information "Setting name variables..."
-          $releaseFileName = "extractor-linux-x64.zip"
-          $executableFileName = "extractor"
+          echo "Setting name variables..."
+          release_file_name="extractor-linux-x64.zip"
+          executable_file_name="extractor"
 
-          if ("${{ runner.os }}" -like "*win*") {
-            $releaseFileName = "extractor-win-x64.zip"
-            $executableFileName = "extractor.exe"
-          }
-          elseif ("${{ runner.os }}" -like "*mac*" -and "${{ runner.arch }}" -like "*arm*") {
-            $releaseFileName = "extractor-osx-arm64.zip"
-          }
-          elseif ("${{ runner.os }}" -like "*mac*" -and "${{ runner.arch }}" -like "*x86_64*") {
-            $releaseFileName = "extractor-osx-x64.zip"
-          }
+          echo "Downloading release..."
+          uri="https://github.com/Azure/apiops/releases/download/${{ env.apiops_release_version }}/${release_file_name}"
+          download_file_path="${{ runner.temp }}/${release_file_name}"
+          curl -fL "$uri" -o "$download_file_path"
 
-          Write-Information "Downloading release..."
-          $uri = "https://github.com/Azure/apiops/releases/download/${{ env.apiops_release_version }}/$releaseFileName"
-          $downloadFilePath = Join-Path "${{ runner.temp }}" $releaseFileName
-          Invoke-WebRequest -Uri "$uri" -OutFile "$downloadFilePath"
+          echo "Extracting release..."
+          executable_folder_path="${{ runner.temp }}/extractor"
+          rm -rf "$executable_folder_path"
+          mkdir -p "$executable_folder_path"
+          unzip -oq "$download_file_path" -d "$executable_folder_path"
+          executable_file_path="${executable_folder_path}/${executable_file_name}"
 
-          Write-Information "Extracting release..."
-          $executableFolderPath = Join-Path "${{ runner.temp }}" "extractor"
-          Expand-Archive -Path "$downloadFilePath" -DestinationPath "$executableFolderPath"
-          $executableFilePath = Join-Path "$executableFolderPath" $executableFileName
+          echo "Setting file permissions..."
+          chmod +x "$executable_file_path"
 
-          Write-Information "Setting file permissions..."
-          if ("${{ runner.os }}" -like "*linux*")
-          {
-            & chmod +x "$executableFilePath"
-            if ($LASTEXITCODE -ne 0) { throw "Setting file permissions failed."}
-          }
+          echo "Running extractor..."
+          "$executable_file_path"
 
-          Write-Information "Running extractor..."
-          & "$executableFilePath"              
-          if ($LASTEXITCODE -ne 0) { throw "Running extractor failed."}
-
-          Write-Information "Execution complete."
-        shell: pwsh
+          echo "Execution complete."
+        shell: bash
       
       - name: Run extractor with Config Yaml
         if: ${{ github.event.inputs.CONFIGURATION_YAML_PATH != 'Extract All APIs' }}
@@ -101,49 +84,32 @@ jobs:
           CONFIGURATION_YAML_PATH:  ${{ GITHUB.WORKSPACE }}/${{ github.event.inputs.CONFIGURATION_YAML_PATH }}
           # AZURE_CLOUD_ENVIRONMENT: AzureChinaCloud
         run: |
-          Set-StrictMode -Version Latest
-          $ErrorActionPreference = "Stop"
-          $VerbosePreference = "Continue"
-          $InformationPreference = "Continue"
+          set -euo pipefail
 
-          Write-Information "Setting name variables..."
-          $releaseFileName = "extractor-linux-x64.zip"
-          $executableFileName = "extractor"
+          echo "Setting name variables..."
+          release_file_name="extractor-linux-x64.zip"
+          executable_file_name="extractor"
 
-          if ("${{ runner.os }}" -like "*win*") {
-            $releaseFileName = "extractor-win-x64.zip"
-            $executableFileName = "extractor.exe"
-          }
-          elseif ("${{ runner.os }}" -like "*mac*" -and "${{ runner.arch }}" -like "*arm*") {
-            $releaseFileName = "extractor-osx-arm64.zip"
-          }
-          elseif ("${{ runner.os }}" -like "*mac*" -and "${{ runner.arch }}" -like "*x86_64*") {
-            $releaseFileName = "extractor-osx-x64.zip"
-          }
+          echo "Downloading release..."
+          uri="https://github.com/Azure/apiops/releases/download/${{ env.apiops_release_version }}/${release_file_name}"
+          download_file_path="${{ runner.temp }}/${release_file_name}"
+          curl -fL "$uri" -o "$download_file_path"
 
-          Write-Information "Downloading release..."
-          $uri = "https://github.com/Azure/apiops/releases/download/${{ env.apiops_release_version }}/$releaseFileName"
-          $downloadFilePath = Join-Path "${{ runner.temp }}" $releaseFileName
-          Invoke-WebRequest -Uri "$uri" -OutFile "$downloadFilePath"
+          echo "Extracting release..."
+          executable_folder_path="${{ runner.temp }}/extractor"
+          rm -rf "$executable_folder_path"
+          mkdir -p "$executable_folder_path"
+          unzip -oq "$download_file_path" -d "$executable_folder_path"
+          executable_file_path="${executable_folder_path}/${executable_file_name}"
 
-          Write-Information "Extracting release..."
-          $executableFolderPath = Join-Path "${{ runner.temp }}" "extractor"
-          Expand-Archive -Path "$downloadFilePath" -DestinationPath "$executableFolderPath"
-          $executableFilePath = Join-Path "$executableFolderPath" $executableFileName
+          echo "Setting file permissions..."
+          chmod +x "$executable_file_path"
 
-          Write-Information "Setting file permissions..."
-          if ("${{ runner.os }}" -like "*linux*")
-          {
-            & chmod +x "$executableFilePath"
-            if ($LASTEXITCODE -ne 0) { throw "Setting file permissions failed."}
-          }
+          echo "Running extractor..."
+          "$executable_file_path"
 
-          Write-Information "Running extractor..."
-          & "$executableFilePath"              
-          if ($LASTEXITCODE -ne 0) { throw "Running extractor failed."}
-
-          Write-Information "Execution complete."
-        shell: pwsh
+          echo "Execution complete."
+        shell: bash
 
       - name: publish artifact
         uses: actions/upload-artifact@v4
