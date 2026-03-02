@@ -1,4 +1,4 @@
-apimServiceName: [prod or any other target environment apim instance name goes here]
+apimServiceName: apimyyj2
 namedValues:
   - name: ratelimittest
     properties:
