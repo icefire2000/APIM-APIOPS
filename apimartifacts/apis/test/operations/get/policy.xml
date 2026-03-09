@@ -6,7 +6,7 @@
 <!-- Add policies as children to the <inbound>, <outbound>, <backend>, and <on-error> elements -->
 <policies>
 	<!-- Throttle, authorize, validate, cache, or transform the requests -->
-	<!-- 1 -->
+	<!-- 12 -->
 	<inbound>
 		<base />
 	</inbound>
