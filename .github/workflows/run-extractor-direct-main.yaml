@@ -1,0 +1,145 @@
+name: Run - Extractor (Direct Push Main)
+
+on:
+  workflow_dispatch:
+    inputs:
+      CONFIGURATION_YAML_PATH:
+        description: 'Choose whether to extract all APIs or use extraction config file'
+        required: true
+        type: choice
+        options:
+          - Extract All APIs
+          - configuration.extractor.yaml
+      API_SPECIFICATION_FORMAT:
+        description: 'API Specification Format'
+        required: true
+        type: choice
+        options:
+          - OpenAPIV3Yaml
+          - OpenAPIV3Json
+          - OpenAPIV2Yaml
+          - OpenAPIV2Json
+
+# Prevent concurrent runs from racing to push main.
+concurrency:
+  group: extractor-direct-main
+  cancel-in-progress: false
+
+env:
+  apiops_release_version: v6.0.1.10
+
+jobs:
+  extract-and-push-main:
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.PAT_GITHUB_TOKEN2 || github.token }}
+
+      - name: Run extractor without Config Yaml
+        if: ${{ github.event.inputs.CONFIGURATION_YAML_PATH == 'Extract All APIs' }}
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_RESOURCE_GROUP_NAME: ${{ secrets.AZURE_RESOURCE_GROUP_NAME }}
+          API_MANAGEMENT_SERVICE_NAME: ${{ secrets.API_MANAGEMENT_SERVICE_NAME }}
+          API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH: ${{ GITHUB.WORKSPACE }}/apimartifacts
+          API_SPECIFICATION_FORMAT: ${{ github.event.inputs.API_SPECIFICATION_FORMAT }}
+        run: |
+          set -euo pipefail
+
+          release_file_name="extractor-linux-x64.zip"
+          executable_file_name="extractor"
+
+          uri="https://github.com/Azure/apiops/releases/download/${{ env.apiops_release_version }}/${release_file_name}"
+          download_file_path="${{ runner.temp }}/${release_file_name}"
+          curl -fL "$uri" -o "$download_file_path"
+
+          executable_folder_path="${{ runner.temp }}/extractor"
+          rm -rf "$executable_folder_path"
+          mkdir -p "$executable_folder_path"
+          unzip -oq "$download_file_path" -d "$executable_folder_path"
+          executable_file_path="${executable_folder_path}/${executable_file_name}"
+
+          chmod +x "$executable_file_path"
+          "$executable_file_path"
+        shell: bash
+
+      - name: Run extractor with Config Yaml
+        if: ${{ github.event.inputs.CONFIGURATION_YAML_PATH != 'Extract All APIs' }}
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_RESOURCE_GROUP_NAME: ${{ secrets.AZURE_RESOURCE_GROUP_NAME }}
+          API_MANAGEMENT_SERVICE_NAME: ${{ secrets.API_MANAGEMENT_SERVICE_NAME }}
+          API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH: ${{ GITHUB.WORKSPACE }}/apimartifacts
+          API_SPECIFICATION_FORMAT: ${{ github.event.inputs.API_SPECIFICATION_FORMAT }}
+          CONFIGURATION_YAML_PATH: ${{ GITHUB.WORKSPACE }}/${{ github.event.inputs.CONFIGURATION_YAML_PATH }}
+        run: |
+          set -euo pipefail
+
+          release_file_name="extractor-linux-x64.zip"
+          executable_file_name="extractor"
+
+          uri="https://github.com/Azure/apiops/releases/download/${{ env.apiops_release_version }}/${release_file_name}"
+          download_file_path="${{ runner.temp }}/${release_file_name}"
+          curl -fL "$uri" -o "$download_file_path"
+
+          executable_folder_path="${{ runner.temp }}/extractor"
+          rm -rf "$executable_folder_path"
+          mkdir -p "$executable_folder_path"
+          unzip -oq "$download_file_path" -d "$executable_folder_path"
+          executable_file_path="${executable_folder_path}/${executable_file_name}"
+
+          chmod +x "$executable_file_path"
+          "$executable_file_path"
+        shell: bash
+
+      - name: Commit changes
+        id: commit_changes
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Only track APIM artifacts. Adjust path if your output folder differs.
+          git add apimartifacts
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git commit -m "updated extract from apim instance apimartifacts"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Push to main (rebase retry)
+        if: steps.commit_changes.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+
+          for i in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              echo "Push succeeded on attempt ${i}."
+              exit 0
+            fi
+            echo "Push conflict on attempt ${i}, retrying..."
+            sleep 3
+          done
+
+          echo "Push failed after retries."
+          exit 1
+        shell: bash
