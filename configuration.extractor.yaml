@@ -4,34 +4,34 @@
  apiNames:
   - test
 
-#  backendNames:
+ backendNames:
 #   - backendName1
 #   - backendName2
 
-#  diagnosticNames:
+ diagnosticNames:
 #  - diagnosticName1
 #  - diagnosticName2
 
-#  loggerNames:
+ loggerNames:
 #   - loggerName1
 #   - loggerName2
 
-#  namedValueNames:
+ namedValueNames:
 #   - namedValueName1
 #   - namedValueName2
 
-#  productNames:
+ productNames:
 #   - productName1
 #   - productName2
 
-#  subscriptionNames:
+ subscriptionNames:
 #  - subscriptionName1
 #  - subscriptionName2
 
-#  tagNames:
+ tagNames:
 #   - tagName1
 #   - tagName2
   
-#  policyFragmentNames:
+ policyFragmentNames:
 #   - policyFragment1
 #   - policyFragment2
