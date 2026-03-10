@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "new3displayname",
+    "scope": "/subscriptions/21289af5-b0bb-4008-9b98-c22245bcb24e/resourceGroups/api/providers/Microsoft.ApiManagement/service/apimyyj/apis",
+    "allowTracing": false,
+    "state": "active"
+  }
+}
