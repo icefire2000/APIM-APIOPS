@@ -1,0 +1,47 @@
+<!--
+    - Policies are applied in the order they appear.
+    - Position <base/> inside a section to inherit policies from the outer scope.
+    - Comments within policies are not preserved.
+-->
+<!-- Add policies as children to the <inbound>, <outbound>, <backend>, and <on-error> elements -->
+<policies>
+	<!-- Throttle, authorize, validate, cache, or transform the requests -->
+	<inbound>
+		<base />
+		<set-header name="Ocp-Apim-Subscription-Key" exists-action="override">
+			<value>22f7ac91b2164020ae1687cd3c268445</value>
+		</set-header>
+		<set-backend-service base-url="https://apim-poc-configuration.azurechina.cloud.bmw/mocktest/" />
+	</inbound>
+	<!-- Control if and how the requests are forwarded to services  -->
+	<backend>
+		<base />
+	</backend>
+	<!-- Customize the responses -->
+	<outbound>
+		<base />
+	</outbound>
+	<!-- Handle exceptions and customize error responses  -->
+	<on-error>
+		<choose>
+			<when condition="@(context.LastError.Message.Contains("The remote name could not be resolved"))">
+				<return-response>
+					<set-status code="502" reason="DNS Resolution Failed" />
+					<set-body>{"error":"DNS resolution failed. Please check the backend URL."}</set-body>
+				</return-response>
+			</when>
+			<when condition="@(context.LastError.Message.Contains("The SSL connection could not be established"))">
+				<return-response>
+					<set-status code="502" reason="SSL Error" />
+					<set-body>{"error":"SSL handshake failed. Possible certificate issue."}</set-body>
+				</return-response>
+			</when>
+			<otherwise>
+				<return-response>
+					<set-status code="500" reason="Backend Error" />
+					<set-body>@(string.Format("{{\"error\":\"An unexpected error occurred: {0}\"}}", context.LastError.Message))</set-body>
+				</return-response>
+			</otherwise>
+		</choose>
+	</on-error>
+</policies>

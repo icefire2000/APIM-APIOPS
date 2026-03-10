@@ -1,0 +1,56 @@
+openapi: 3.0.1
+info:
+  title: Sample API
+  description: from lucy for policy validate
+  version: '1.0'
+servers:
+  - url: https://sam-apim-cnn3-int.azure-api.cn
+paths:
+  /sample/xmltojson:
+    post:
+      summary: xmltojson
+      operationId: xmltojson
+      responses:
+        '200':
+          description: ''
+  /sample/healthcheck:
+    get:
+      summary: healthcheck
+      operationId: healthcheck
+      responses:
+        '200':
+          description: ''
+  /test/mock:
+    get:
+      summary: test-mock-response
+      operationId: test-mock-response
+      responses:
+        '200':
+          description: ''
+  /sample/cache-test:
+    get:
+      summary: cache_test
+      operationId: cache-test
+      responses:
+        '200':
+          description: ''
+  /sample/getcache:
+    get:
+      summary: get cache
+      operationId: get-cache
+      responses:
+        '200':
+          description: ''
+components:
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: subscription-key
+      in: query
+security:
+  - apiKeyHeader: [ ]
+  - apiKeyQuery: [ ]

@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "scope": "/subscriptions/7291a0ca-0ee6-4c9f-92c4-8dd8f20533ae/resourceGroups/RG-APIManagement-CNN3-INT/providers/Microsoft.ApiManagement/service/sam-apim-cnn3-int/products/unlimited",
+    "allowTracing": false,
+    "ownerId": "/subscriptions/7291a0ca-0ee6-4c9f-92c4-8dd8f20533ae/resourceGroups/RG-APIManagement-CNN3-INT/providers/Microsoft.ApiManagement/service/sam-apim-cnn3-int/users/1",
+    "state": "active"
+  }
+}

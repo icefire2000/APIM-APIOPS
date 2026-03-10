@@ -1,0 +1,17 @@
+<policies>
+	<inbound>
+		<!--test comments -->
+		<include-fragment fragment-id="GeneralWebEAMAuthenticationWithCache" />
+		<base />
+		<mock-response status-code="200" content-type="application/json" />
+	</inbound>
+	<backend>
+		<base />
+	</backend>
+	<outbound>
+		<base />
+	</outbound>
+	<on-error>
+		<include-fragment fragment-id="GeneralErrorHandling" />
+	</on-error>
+</policies>

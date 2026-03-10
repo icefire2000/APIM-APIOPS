@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "path": "m2m",
+    "apiRevision": "1",
+    "apiRevisionDescription": "revision 2",
+    "apiVersion": "v2",
+    "apiVersionSetId": "/subscriptions/7291a0ca-0ee6-4c9f-92c4-8dd8f20533ae/resourceGroups/RG-APIManagement-CNN3-INT/providers/Microsoft.ApiManagement/service/sam-apim-cnn3-int/apiVersionSets/68c799bfb44b732a754b5ea3",
+    "authenticationSettings": {},
+    "description": "webEAM",
+    "isCurrent": true,
+    "displayName": "apim-mock-webEAM",
+    "protocols": [
+      "https"
+    ],
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "subscriptionRequired": true
+  }
+}

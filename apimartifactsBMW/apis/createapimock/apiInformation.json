@@ -1,0 +1,19 @@
+{
+  "properties": {
+    "path": "newapiPath",
+    "apiRevision": "1",
+    "authenticationSettings": {},
+    "description": "apidescription5200",
+    "isCurrent": true,
+    "displayName": "apiname1463",
+    "protocols": [
+      "https"
+    ],
+    "serviceUrl": "http://newechoapi.cloudapp.net/api",
+    "subscriptionKeyParameterNames": {
+      "header": "header4520",
+      "query": "query3037"
+    },
+    "subscriptionRequired": true
+  }
+}

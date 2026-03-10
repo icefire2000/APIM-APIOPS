@@ -1,0 +1,14 @@
+<policies>
+	<inbound>
+		<base />
+		<rate-limit-by-key calls="{{ratelimit}}" renewal-period="10" counter-key="@(context.Request.IpAddress)" remaining-calls-variable-name="remainingCallsPerIP" />
+		<authentication-certificate thumbprint="689A075408730290940E6E7A600CF100F7CFDD36" />
+	</inbound>
+	<backend>
+		<forward-request />
+	</backend>
+	<outbound />
+	<on-error>
+		<base />
+	</on-error>
+</policies>

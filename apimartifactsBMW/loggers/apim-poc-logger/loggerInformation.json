@@ -1,0 +1,12 @@
+{
+  "properties": {
+    "loggerType": "azureEventHub",
+    "credentials": {
+      "endpointAddress": "apim-eventhub.servicebus.chinacloudapi.cn",
+      "identityClientId": "{{68ca37e867ce4217e0d7ed90}}",
+      "name": "apim-poc-eh"
+    },
+    "description": "Event Hub logger with system-assigned managed identity",
+    "isBuffered": true
+  }
+}

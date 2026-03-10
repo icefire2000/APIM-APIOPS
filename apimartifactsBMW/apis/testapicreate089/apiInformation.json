@@ -1,0 +1,19 @@
+{
+  "properties": {
+    "path": "createapimock1",
+    "apiRevision": "1",
+    "authenticationSettings": {},
+    "description": "test api create",
+    "isCurrent": true,
+    "displayName": "testapicreate089",
+    "protocols": [
+      "https"
+    ],
+    "serviceUrl": "http://newechoapi.cloudapp.net/api",
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "subscriptionRequired": true
+  }
+}

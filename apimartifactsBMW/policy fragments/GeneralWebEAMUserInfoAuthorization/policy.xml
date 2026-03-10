@@ -1,0 +1,78 @@
+<fragment>
+	<set-variable name="userAuthHeader" value="@("Bearer " + ((string)context.Request.Headers.GetValueOrDefault("User-Authorization", "")).Trim())" />
+	<trace source="auth-debug" severity="information">
+		<message>@("Calling tokeninfo for user roles...")</message>
+	</trace>
+	<send-request mode="new" response-variable-name="tokeninfo" timeout="20" ignore-error="false">
+		<set-url>https://auth-i.bmwgroup.net/auth/oauth2/realms/root/realms/machine2machine/tokeninfo</set-url>
+		<set-method>GET</set-method>
+		<set-header name="Authorization" exists-action="override">
+			<value>@((string)context.Variables["userAuthHeader"])</value>
+		</set-header>
+	</send-request>
+	<choose>
+		<when condition="@(((IResponse)context.Variables["tokeninfo"]).StatusCode != 200)">
+			<trace source="auth-debug" severity="information">
+				<message>@($"tokeninfo failed: status={((IResponse)context.Variables["tokeninfo"]).StatusCode}")</message>
+			</trace>
+			<return-response>
+				<set-status code="401" reason="Unauthorized" />
+				<set-header name="WWW-Authenticate" exists-action="override">
+					<value>Bearer error="invalid_token"</value>
+				</set-header>
+				<set-body>{"error":"Invalid token"}</set-body>
+			</return-response>
+		</when>
+	</choose>
+	<set-variable name="tokeninfoJson" value="@(((IResponse)context.Variables["tokeninfo"]).Body.As<JObject>(true))" />
+	<choose>
+		<when condition="@(((JObject)context.Variables["tokeninfoJson"])["error"] != null)">
+			<trace source="auth-debug" severity="information">
+				<message>@($"tokeninfo error: {((JObject)context.Variables["tokeninfoJson"])["error"]}")</message>
+			</trace>
+			<return-response>
+				<set-status code="401" reason="Unauthorized" />
+				<set-header name="WWW-Authenticate" exists-action="override">
+					<value>Bearer error="invalid_token"</value>
+				</set-header>
+				<set-body>{"error":"Invalid token"}</set-body>
+			</return-response>
+		</when>
+	</choose>
+	<set-variable name="hasRequiredRole" value="@{
+        var obj = (JObject)context.Variables["tokeninfoJson"];
+        var rolesToken = obj.SelectToken("b2xroles");
+        System.Collections.Generic.IEnumerable<string> roles = System.Linq.Enumerable.Empty<string>();
+
+        if (rolesToken != null)
+        {
+            if (rolesToken.Type == JTokenType.Array)
+            {
+                roles = rolesToken.Values<string>().Select(r => (r ?? "").Trim());
+            }
+            else
+            {
+                roles = ((string)rolesToken ?? "")
+                        .Split(new[]{',' ,' '}, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(r => r.Trim());
+            }
+        }
+
+        var required = new [] { "IVSR_Core","IVSR_Dealer","IVSR_CE_DispositionClerk","IVSR_New_Menu","IVSR_Admin_VG","s_gate_cn_user" };
+        return roles.Intersect(required, StringComparer.OrdinalIgnoreCase).Any();
+      }" />
+	<trace source="auth-debug" severity="information">
+		<message>@($"hasRequiredRole = {(bool)context.Variables["hasRequiredRole"]}")</message>
+	</trace>
+	<choose>
+		<when condition="@(!(bool)context.Variables["hasRequiredRole"])">
+			<return-response>
+				<set-status code="401" reason="Unauthorized" />
+				<set-header name="Content-Type" exists-action="override">
+					<value>application/json</value>
+				</set-header>
+				<set-body>{"error":"insufficient_role","required_any_of":["IVSR_Core","IVSR_Dealer","IVSR_CE_DispositionClerk","IVSR_New_Menu","IVSR_Admin_VG"]}</set-body>
+			</return-response>
+		</when>
+	</choose>
+</fragment>

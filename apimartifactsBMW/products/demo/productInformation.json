@@ -1,0 +1,9 @@
+{
+  "properties": {
+    "displayName": "demo",
+    "description": "Test product create.",
+    "approvalRequired": false,
+    "state": "published",
+    "subscriptionRequired": true
+  }
+}

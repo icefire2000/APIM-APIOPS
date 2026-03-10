@@ -1,0 +1,143 @@
+<policies>
+	<inbound>
+		<base />
+		<!-- 1) CorrelationId 生成/透传 -->
+		<set-variable name="correlationId" value="@(context.Request.Headers.GetValueOrDefault("x-correlation-id", Guid.NewGuid().ToString()))" />
+		<set-header name="x-correlation-id" exists-action="override">
+			<value>@((string)context.Variables["correlationId"])</value>
+		</set-header>
+		<!-- 2) A 的入站日志（Headers + Body） -->
+		<trace source="AAA-inbound" severity="information">
+			<message>@{  
+        var headers = string.Join("\n", context.Request.Headers.Select(h => $"{h.Key}: {string.Join(";", h.Value)}"));  
+        var body = context.Request.Body?.As<string>(preserveContent:true) ?? "No Body";  
+        return $"correlationId={context.Variables["correlationId"]}\n\nRequest Headers:\n{headers}\n\nRequest Body:\n{body}\n";  
+      }</message>
+		</trace>
+		<!-- 3) 获取 OAuth Token (Auth) -->
+		<set-variable name="auth_url" value="https://auth-i.bmwgroup.net/auth/oauth2/realms/root/realms/machine2machine/access_token" />
+		<!-- 构造 x-www-form-urlencoded 请求体  未来：机密用其它存储替代 -->
+		<set-variable name="auth_form_body" value="@{  
+        var cid = "519611fc-85e8-4735-858d-c32a4ac70bc2";  
+        var csec = "hUEavhFA7krWo4YgdwHxQ8CQ3Bp7SnKyWeMuN0OE";  
+        var scope = "machine2machine";  
+        var payload = $"grant_type=client_credentials&client_id={Uri.EscapeDataString(cid)}&client_secret={Uri.EscapeDataString(csec)}&scope={Uri.EscapeDataString(scope)}";  
+        return payload;  
+    }" />
+		<trace source="AUTH-request" severity="information">
+			<message>@{  
+        var url = (string)context.Variables["auth_url"];  
+        var body = (string)context.Variables["auth_form_body"];  
+        return $"correlationId={context.Variables["correlationId"]}\nURL={url}\nMethod=POST\nHeaders:\nContent-Type: application/x-www-form-urlencoded\nCookie: <masked or from Named Value>\n\nBody:\n{body}\n";  
+      }</message>
+		</trace>
+		<send-request mode="new" timeout="30" response-variable-name="respAuth">
+			<set-url>@((string)context.Variables["auth_url"])</set-url>
+			<set-method>POST</set-method>
+			<set-header name="Content-Type" exists-action="override">
+				<value>application/x-www-form-urlencoded</value>
+			</set-header>
+			<set-header name="x-correlation-id" exists-action="override">
+				<value>@((string)context.Variables["correlationId"])</value>
+			</set-header>
+			<set-body>@((string)context.Variables["auth_form_body"])</set-body>
+		</send-request>
+		<trace source="AUTH-response" severity="information">
+			<message>@{  
+        var r = (IResponse)context.Variables["respAuth"];  
+        var hdr = string.Join("\n", r.Headers.Select(h => $"{h.Key}: {string.Join(";", h.Value)}"));  
+        var body = r.Body.As<string>(preserveContent:true);  
+        return $"correlationId={context.Variables["correlationId"]}\nStatus={r.StatusCode}\nHeaders:\n{hdr}\n\nBody:\n{body}\n";  
+      }</message>
+		</trace>
+		<!-- 解析 access_token -->
+		<set-variable name="access_token" value="@{  
+        var r = (IResponse)context.Variables["respAuth"];  
+        var jo = r.Body.As<JObject>(preserveContent:true);  
+        return (string)(jo["access_token"] ?? "");  
+    }" />
+		<!-- 4) 调用 Invoice 开放订单 (GET) -->
+		<set-variable name="inv_url" value="https://invoiceapi.dwh-int.cn-north-1.aws.cloud.bmw/invoiceAPI/v1/open-order" />
+		<trace source="INVOICE-request" severity="information">
+			<message>@{  
+        var url = (string)context.Variables["inv_url"];  
+        return $"correlationId={context.Variables["correlationId"]}\nURL={url}\nMethod=GET\nHeaders:\nAuthorization: Bearer <token>\nx-correlation-id: {(string)context.Variables["correlationId"]}\n";  
+      }</message>
+		</trace>
+		<send-request mode="new" timeout="60" response-variable-name="respInv">
+			<set-url>@((string)context.Variables["inv_url"])</set-url>
+			<set-method>GET</set-method>
+			<set-header name="Authorization" exists-action="override">
+				<value>@($"Bearer {context.Variables.GetValueOrDefault<string>("access_token")}")</value>
+			</set-header>
+			<set-header name="x-correlation-id" exists-action="override">
+				<value>@((string)context.Variables["correlationId"])</value>
+			</set-header>
+		</send-request>
+		<trace source="INVOICE-response" severity="information">
+			<message>@{  
+        var r = (IResponse)context.Variables["respInv"];  
+        var hdr = string.Join("\n", r.Headers.Select(h => $"{h.Key}: {string.Join(";", h.Value)}"));  
+        var body = r.Body.As<string>(preserveContent:true);  
+        return $"correlationId={context.Variables["correlationId"]}\nStatus={r.StatusCode}\nHeaders:\n{hdr}\n\nBody:\n{body}\n";  
+      }</message>
+		</trace>
+		<!-- 解析 Invoice 返回体为 JToken（不确定是数组还是对象，兜底为字符串） -->
+		<set-variable name="openOrder" value="@{  
+        var r = (IResponse)context.Variables["respInv"];  
+        var s = r.Body.As<string>(preserveContent:true) ?? "";  
+        try { return JToken.Parse(s); } catch { return s; }  
+    }" />
+		<!-- 5) 组装最终响应（不回传 token） -->
+		<set-variable name="result" value="@{  
+    var openOrder = context.Variables.GetValueOrDefault("openOrder") as JToken;  
+    if (openOrder == null)  
+    {  
+        var openOrderStr = context.Variables.GetValueOrDefault<string>("openOrder");  
+        try  
+        {  
+            openOrder = JToken.Parse(openOrderStr);  
+        }  
+        catch  
+        {  
+            openOrder = openOrderStr;  
+        }  
+    }  
+
+    var obj = new JObject  
+    {  
+        ["correlationId"] = (string)context.Variables["correlationId"],  
+        ["openOrder"] = openOrder  
+    };  
+    return obj;  
+}" />
+	</inbound>
+	<backend>
+		<base />
+	</backend>
+	<outbound>
+		<base />
+		<set-header name="x-correlation-id" exists-action="override">
+			<value>@((string)context.Variables["correlationId"])</value>
+		</set-header>
+		<set-header name="Content-Type" exists-action="override">
+			<value>application/json; charset=utf-8</value>
+		</set-header>
+		<set-body>@(((JObject)context.Variables["result"]).ToString())</set-body>
+		<!-- A 的出站日志（Headers + Body） -->
+		<trace source="A-outbound" severity="information">
+			<message>@{  
+        var headers = string.Join("\n", context.Response.Headers.Select(h => $"{h.Key}: {string.Join(";", h.Value)}"));  
+        var body = context.Response.Body.As<string>(preserveContent:true) ?? "No Body";  
+        return $"correlationId={context.Variables["correlationId"]}\n\nResponse Headers:\n{headers}\n\nResponse Body:\n{body}\n";  
+      }</message>
+		</trace>
+	</outbound>
+	<on-error>
+		<base />
+		<trace source="A-error" severity="error">
+			<message>@($"correlationId={context.Variables.GetValueOrDefault<string>("correlationId")}\nLastError: {context.LastError?.Message}\nSource={context.LastError?.Source}, Reason={context.LastError?.Reason}, Section={context.LastError?.Section}")</message>
+		</trace>
+		<include-fragment fragment-id="GeneralErrorHandling" />
+	</on-error>
+</policies>

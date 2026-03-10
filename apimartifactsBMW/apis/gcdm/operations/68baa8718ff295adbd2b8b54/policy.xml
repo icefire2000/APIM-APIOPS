@@ -1,0 +1,332 @@
+<policies>
+	<inbound>
+		<base />
+		<trace source="request-info" severity="information">
+			<message>@{              
+            var headerOutput = string.Join("\n", context?.Request?.Headers?.Select(h => $"{h.Key}: {string.Join(";", h.Value)}"));
+            var body = context?.Request?.Body?.As<string>(preserveContent: true) ?? "No Body";
+            return $"\n\nRequest Headers:\n{headerOutput}\n\nRequest Body:\n{body}\n\n";
+        }</message>
+		</trace>
+		<!-- 1) only allow post -->
+		<choose>
+			<when condition="@(!string.Equals(context.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))">
+				<return-response>
+					<set-status code="405" reason="Method Not Allowed" />
+					<set-header name="Allow" exists-action="override">
+						<value>POST</value>
+					</set-header>
+					<set-body>{"error":"method_not_allowed"}</set-body>
+				</return-response>
+			</when>
+		</choose>
+		<!-- 2) Content-Type = x-www-form-urlencoded -->
+		<set-variable name="ct" value="@((string)context.Request.Headers.GetValueOrDefault("Content-Type",""))" />
+		<choose>
+			<when condition="@(!(((string)context.Variables["ct"]) ?? string.Empty).ToLowerInvariant().Contains("application/x-www-form-urlencoded"))">
+				<return-response>
+					<set-status code="415" reason="Unsupported Media Type" />
+					<set-header name="Content-Type" exists-action="override">
+						<value>application/json</value>
+					</set-header>
+					<set-body>{"error":"content_type_must_be_application_x_www_form_urlencoded"}</set-body>
+				</return-response>
+			</when>
+		</choose>
+		<!-- 3) read form -->
+		<set-variable name="rawForm" value="@((string)context.Request.Body.As<string>(preserveContent: true) ?? string.Empty)" />
+		<!-- 4) parameters -->
+		<!-- response_type -->
+		<set-variable name="response_type" value="@{  
+        var raw = (string)context.Variables["rawForm"] ?? string.Empty;  
+        var key = "response_type=";  
+        var i = raw.IndexOf(key, StringComparison.OrdinalIgnoreCase);  
+        var result = "";  
+        if (i >= 0) {  
+          var s = i + key.Length;  
+          var e = raw.IndexOf('&', s);  
+          var v = (e < 0 ? raw.Substring(s) : raw.Substring(s, e - s));  
+          v = v.Replace("+", " ");  
+          result = System.Uri.UnescapeDataString(v);  
+        }  
+        return result;  
+      }" />
+		<!-- client_id -->
+		<set-variable name="client_id" value="@{  
+        var raw = (string)context.Variables["rawForm"] ?? string.Empty;  
+        var key = "client_id=";  
+        var i = raw.IndexOf(key, StringComparison.OrdinalIgnoreCase);  
+        var result = "";  
+        if (i >= 0) {  
+          var s = i + key.Length;  
+          var e = raw.IndexOf('&', s);  
+          var v = (e < 0 ? raw.Substring(s) : raw.Substring(s, e - s));  
+          v = v.Replace("+", " ");  
+          result = System.Uri.UnescapeDataString(v);  
+        }  
+        return result;  
+      }" />
+		<!-- redirect_uri -->
+		<set-variable name="redirect_uri" value="@{   
+            var raw = (string)context.Variables["rawForm"] ?? string.Empty;  
+            var key = "redirect_uri=";  
+            var i = raw.IndexOf(key, StringComparison.OrdinalIgnoreCase);  
+            var result = "";  
+            if (i >= 0) {  
+                var s = i + key.Length;  
+                var e = raw.IndexOf('&', s);  
+                var v = (e < 0 ? raw.Substring(s) : raw.Substring(s, e - s));  
+                v = v.Replace("+", " ");   
+                result = System.Uri.UnescapeDataString(v);  
+            }  
+            return result;  
+        }" />
+		<!-- username -->
+		<set-variable name="username" value="@{   
+            var raw = (string)context.Variables["rawForm"] ?? string.Empty;
+            var key = "username=";  
+            var i = raw.IndexOf(key, StringComparison.OrdinalIgnoreCase);  
+            var result = "";    
+            if (i >= 0) {  
+                var s = i + key.Length;  
+                var e = raw.IndexOf('&', s);  
+                var v = (e < 0 ? raw.Substring(s) : raw.Substring(s, e - s));  
+                v = v.Replace("+", " ");  
+                result = System.Uri.UnescapeDataString(v);  
+            }  
+            return result;  
+        }" />
+		<!-- password -->
+		<set-variable name="password" value="@{   
+            var raw = (string)context.Variables["rawForm"] ?? string.Empty;
+            var key = "password=";  
+            var i = raw.IndexOf(key, StringComparison.OrdinalIgnoreCase);  
+            var result = "";    
+            if (i >= 0) {  
+                var s = i + key.Length;  
+                var e = raw.IndexOf('&', s);  
+                var v = (e < 0 ? raw.Substring(s) : raw.Substring(s, e - s));  
+                v = v.Replace("+", " ");  
+                result = System.Uri.UnescapeDataString(v);  
+            }  
+            return result;  
+        }" />
+		<!-- scope -->
+		<set-variable name="scope" value="@{   
+            var raw = (string)context.Variables["rawForm"] ?? string.Empty;
+            var key = "scope=";  
+            var i = raw.IndexOf(key, StringComparison.OrdinalIgnoreCase);  
+            var result = "";    
+            if (i >= 0) {  
+                var s = i + key.Length;  
+                var e = raw.IndexOf('&', s);  
+                var v = (e < 0 ? raw.Substring(s) : raw.Substring(s, e - s));  
+                v = v.Replace("+", " ");  
+                result = System.Uri.UnescapeDataString(v);  
+            }  
+            return result;  
+        }" />
+		<!-- state -->
+		<set-variable name="state" value="@{   
+            var raw = (string)context.Variables["rawForm"] ?? string.Empty;
+            var key = "state=";  
+            var i = raw.IndexOf(key, StringComparison.OrdinalIgnoreCase);  
+            var result = "";    
+            if (i >= 0) {  
+                var s = i + key.Length;  
+                var e = raw.IndexOf('&', s);  
+                var v = (e < 0 ? raw.Substring(s) : raw.Substring(s, e - s));  
+                v = v.Replace("+", " ");  
+                result = System.Uri.UnescapeDataString(v);  
+            }  
+            return result;  
+        }" />
+		<!-- nonce -->
+		<set-variable name="nonce" value="@{   
+            var raw = (string)context.Variables["rawForm"] ?? string.Empty;
+            var key = "nonce=";  
+            var i = raw.IndexOf(key, StringComparison.OrdinalIgnoreCase);  
+            var result = "";    
+            if (i >= 0) {  
+                var s = i + key.Length;  
+                var e = raw.IndexOf('&', s);  
+                var v = (e < 0 ? raw.Substring(s) : raw.Substring(s, e - s));  
+                v = v.Replace("+", " ");  
+                result = System.Uri.UnescapeDataString(v);  
+            }  
+            return result;  
+        }" />
+		<!-- authorization (Step 2) -->
+		<set-variable name="authorization" value="@{   
+            var raw = (string)context.Variables["rawForm"] ?? string.Empty;
+            var key = "authorization=";  
+            var i = raw.IndexOf(key, StringComparison.OrdinalIgnoreCase);  
+            var result = "";    
+            if (i >= 0) {  
+                var s = i + key.Length;  
+                var e = raw.IndexOf('&', s);  
+                var v = (e < 0 ? raw.Substring(s) : raw.Substring(s, e - s));  
+                v = v.Replace("+", " ");  
+                result = System.Uri.UnescapeDataString(v);  
+            }  
+            return result;  
+        }" />
+		<!-- 5) mandatory fields validation -->
+		<choose>
+			<when condition="@(  
+                string.IsNullOrEmpty((string)context.Variables["client_id"]) ||  
+                string.IsNullOrEmpty((string)context.Variables["response_type"]) ||  
+                string.IsNullOrEmpty((string)context.Variables["redirect_uri"]) ||  
+                (string.IsNullOrEmpty((string)context.Variables["username"]) && string.IsNullOrEmpty((string)context.Variables["authorization"]))  
+            )">
+				<return-response>
+					<set-status code="400" reason="Bad Request" />
+					<set-header name="Content-Type" exists-action="override">
+						<value>application/json</value>
+					</set-header>
+					<set-body>{"error":"missing_required_parameters"}</set-body>
+				</return-response>
+			</when>
+		</choose>
+		<!-- 6) whitelist : test-client -->
+		<choose>
+			<when condition="@(!(new string[] { "test-client" }).Contains(((string)context.Variables["client_id"]) ?? string.Empty))">
+				<return-response>
+					<set-status code="403" reason="Forbidden" />
+					<set-header name="Content-Type" exists-action="override">
+						<value>application/json</value>
+					</set-header>
+					<set-body>{"error":"client_not_whitelisted"}</set-body>
+				</return-response>
+			</when>
+		</choose>
+		<!-- step 1 or 2 -->
+		<choose>
+			<!-- Step 1: username & password -->
+			<when condition="@(!string.IsNullOrEmpty((string)context.Variables["username"]) && !string.IsNullOrEmpty((string)context.Variables["password"]))">
+				<!-- Step 1 -->
+				<send-request mode="new" response-variable-name="authResp" timeout="20" ignore-error="false">
+					<set-url>https://forgerock-green.preprod-gcdm.cn-north-1.aws.cloud.bmw/am/json/authenticate</set-url>
+					<set-method>POST</set-method>
+					<set-header name="Accept-API-Version" exists-action="override">
+						<value>resource=2.0, protocol=1.0</value>
+					</set-header>
+					<set-header name="Content-Type" exists-action="override">
+						<value>application/json</value>
+					</set-header>
+					<set-header name="X-OpenAM-Password" exists-action="override">
+						<value>@(((string)context.Variables["password"]) ?? "")</value>
+					</set-header>
+					<set-header name="X-OpenAM-Username" exists-action="override">
+						<value>@(((string)context.Variables["username"]) ?? "")</value>
+					</set-header>
+					<set-body>{}</set-body>
+				</send-request>
+				<set-variable name="tokenId" value="@{   
+                    var token = "";   
+                    var resp = context.Variables.ContainsKey("authResp") ? (IResponse)context.Variables["authResp"] : null;   
+                    if (resp != null) {   
+                        try {   
+                            var jo = resp.Body.As<JObject>();   
+                            token = (string)(jo?["tokenId"]) ?? "";    
+                        } catch {}   
+                    }   
+                    return token;   
+                }" />
+				<!-- return 401 -->
+				<choose>
+					<when condition="@{ return string.IsNullOrEmpty((string)context.Variables["tokenId"]); }">
+						<return-response>
+							<set-status code="401" reason="Unauthorized" />
+							<set-header name="Content-Type" exists-action="override">
+								<value>application/json</value>
+							</set-header>
+							<set-body>{"error":"invalid_credentials_or_no_token"}</set-body>
+						</return-response>
+					</when>
+				</choose>
+				<!-- format redirect_to -->
+				<set-variable name="redirect_to" value="@{   
+                    var ru     = (string)context.Variables["redirect_uri"] ?? "";   
+                    var cid    = (string)context.Variables["client_id"] ?? "";   
+                    var rt     = (string)context.Variables["response_type"] ?? "";   
+                    var scope  = (string)context.Variables["scope"] ?? "";   
+                    var state  = (string)context.Variables["state"] ?? "";   
+                    var token  = (string)context.Variables["tokenId"] ?? "";   
+                    var enc_ru = System.Uri.EscapeDataString(ru);   
+                    var redirectUrl =  
+          "https://customer-i.bmwgroup.com/gcdm/static/authorize.html?" +  
+          "redirect_uri=" + enc_ru +  
+          "&client_id=" + cid +  
+          "&response_type=" + rt +  
+          "&scope=" + scope +  
+          "&state=" + state +  
+          "&authorization=" + token;  
+        return redirectUrl;   
+                }" />
+				<!-- response + Set-Cookie -->
+				<return-response>
+					<set-status code="200" reason="OK" />
+					<set-header name="Content-Type" exists-action="override">
+						<value>application/json</value>
+					</set-header>
+					<set-header name="Set-Cookie" exists-action="override">
+						<value>@($"GCDMSSO={(string)context.Variables["tokenId"]}")</value>
+					</set-header>
+					<set-body>@{   
+                        var redirectTo = (string)context.Variables["redirect_to"] ?? "";   
+                        var jsonSafe = redirectTo.Replace("\\", "\\\\").Replace("\"", "\\\"");   
+                        return "{\"redirect_to\":\"" + jsonSafe + "\"}";   
+                    }</set-body>
+				</return-response>
+			</when>
+			<!-- Step 2:  authorization -->
+			<otherwise>
+				<send-request mode="new" response-variable-name="authCodeResp" timeout="20" ignore-error="false">
+					<set-url>https://forgerock-green.preprod-gcdm.cn-north-1.aws.cloud.bmw/am/oauth2/authorize</set-url>
+					<set-method>POST</set-method>
+					<set-header name="Cookie" exists-action="override">
+						<value>@($"GCDMSSO={(string)context.Variables["authorization"]}")</value>
+					</set-header>
+					<set-header name="Content-Type" exists-action="override">
+						<value>application/x-www-form-urlencoded</value>
+					</set-header>
+					<set-body>@{  
+                        var formData = $"response_type=code&client_id=test-client&redirect_uri=https://www.forgerock.com/&decision=allow&state=loginstate&csrf={(string)context.Variables["authorization"]}&nonce=test";  
+                        return formData;  
+                    }</set-body>
+				</send-request>
+				<set-variable name="h_Location" value="@{  
+          var r = context.Variables.ContainsKey("authCodeResp") ? (IResponse)context.Variables["authCodeResp"] : null;  
+          return r == null ? "" : ((string)r.Headers.GetValueOrDefault("Location","") ?? "");  
+        }" />
+				<return-response>
+					<set-status code="@(((IResponse)context.Variables["authCodeResp"]).StatusCode)" reason="Found" />
+					<set-header name="Set-Cookie" exists-action="override">
+						<value>@($"GCDMSSO={(string)context.Variables["authorization"]}")</value>
+					</set-header>
+					<set-header name="Location" exists-action="override">
+						<value>@((string)context.Variables["h_Location"])</value>
+					</set-header>
+					<set-body />
+				</return-response>
+			</otherwise>
+		</choose>
+	</inbound>
+	<backend>
+		<base />
+	</backend>
+	<outbound>
+		<base />
+		<trace source="response-info" severity="information">
+			<message>@{              
+            var headerOutput = string.Join("\n", context?.Response?.Headers?.Select(h => $"{h.Key}: {string.Join(";", h.Value)}"));
+            var body = context?.Response?.Body?.As<string>(preserveContent: true) ?? "No Body";
+            return $"\n\nResponse Headers:\n{headerOutput}\n\nResponse Body:\n{body}\n\n";
+        }</message>
+		</trace>
+	</outbound>
+	<on-error>
+		<base />
+	</on-error>
+</policies>

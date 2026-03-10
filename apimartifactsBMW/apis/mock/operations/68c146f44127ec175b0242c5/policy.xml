@@ -1,0 +1,49 @@
+<!--
+    - Policies are applied in the order they appear.
+    - Position <base/> inside a section to inherit policies from the outer scope.
+    - Comments within policies are not preserved.
+-->
+<!-- Add policies as children to the <inbound>, <outbound>, <backend>, and <on-error> elements -->
+<policies>
+	<!-- Throttle, authorize, validate, cache, or transform the requests -->
+	<inbound>
+		<base />
+		<send-request mode="new" response-variable-name="authResp" timeout="20" ignore-error="false">
+			<set-url>https://auth-i.bmwgroup.net/auth/oauth2/realms/root/realms/machine2machine/access_token</set-url>
+			<set-method>POST</set-method>
+			<set-header name="Accept-API-Version" exists-action="override">
+				<value>resource=2.0, protocol=1.0</value>
+			</set-header>
+			<set-header name="Content-Type" exists-action="override">
+				<value>application/x-www-form-urlencoded</value>
+			</set-header>
+			<set-body>@($"grant_type={(string)context.Variables["grant_type"]}")</set-body>
+		</send-request>
+		<trace source="request-info" severity="information">
+			<message>@{              
+            var headerReqtOutput = string.Join("\n", context?.Request?.Headers?.Select(h => $"{h.Key}: {string.Join(";", h.Value)}"));
+            var ReqtBody = context?.Request?.Body?.As<string>(preserveContent: true) ?? "No Body";
+            return $"\n\nRequest Headers:\n{headerReqtOutput}\n\nRequest Body:\n{ReqtBody}\n\n";
+        }</message>
+		</trace>
+		<trace source="response-info" severity="information">
+			<message>@{              
+            var headerRespOutput = string.Join("\n", context?.Response?.Headers?.Select(h => $"{h.Key}: {string.Join(";", h.Value)}"));
+            var RespBody = context?.Response?.Body?.As<string>(preserveContent: true) ?? "No Body";
+            return $"\n\nResponse Headers:\n{headerRespOutput}\n\nResponse Body:\n{RespBody}\n\n";
+        }</message>
+		</trace>
+	</inbound>
+	<!-- Control if and how the requests are forwarded to services  -->
+	<backend>
+		<base />
+	</backend>
+	<!-- Customize the responses -->
+	<outbound>
+		<base />
+	</outbound>
+	<!-- Handle exceptions and customize error responses  -->
+	<on-error>
+		<!--<include-fragment fragment-id="GeneralErrorHandling" />-->
+	</on-error>
+</policies>

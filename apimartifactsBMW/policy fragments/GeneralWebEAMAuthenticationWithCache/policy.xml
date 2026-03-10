@@ -1,0 +1,49 @@
+<fragment>
+	<set-variable name="authHeader" value="@((string)context.Request.Headers.GetValueOrDefault("Authorization", ""))" />
+	<set-variable name="token" value="@((string)context.Request.Headers.GetValueOrDefault("token", ""))" />
+	<cache-lookup-value key="@((string)context.Variables["token"])" variable-name="cachedActive" />
+	<choose>
+		<when condition="@(context.Variables.ContainsKey("cachedActive"))">
+			<set-variable name="isActive" value="@(true)" />
+			<trace source="auth-debug" severity="information">
+				<message>Token found in cache, skipping introspect</message>
+			</trace>
+		</when>
+		<otherwise>
+			<trace source="auth-debug" severity="information">
+				<message>@($"Calling introspect with token: {context.Variables["token"]}")</message>
+			</trace>
+			<send-request mode="new" response-variable-name="tokenstate" timeout="20" ignore-error="false">
+				<set-url>@($"https://auth-i.bmwgroup.net/auth/oauth2/realms/root/realms/machine2machine/introspect?token={(string)context.Variables["token"]}")</set-url>
+				<set-method>POST</set-method>
+				<set-header name="Authorization" exists-action="override">
+					<value>@((string)context.Variables["authHeader"])</value>
+				</set-header>
+				<set-header name="Content-Type" exists-action="override">
+					<value>application/x-www-form-urlencoded</value>
+				</set-header>
+				<set-body>@($"token={(string)context.Variables["token"]}")</set-body>
+			</send-request>
+			<set-variable name="isActive" value="@((((IResponse)context.Variables["tokenstate"]).Body.As<JObject>().Value<bool?>("active")) ?? false)" />
+			<trace source="auth-debug" severity="information">
+				<message>@($"introspect active = {(bool)context.Variables["isActive"]}")</message>
+			</trace>
+			<choose>
+				<when condition="@((bool)context.Variables["isActive"])">
+					<cache-store-value key="@((string)context.Variables["token"])" value="true" duration="3600" />
+				</when>
+			</choose>
+		</otherwise>
+	</choose>
+	<choose>
+		<when condition="@(!(bool)context.Variables["isActive"])">
+			<return-response>
+				<set-status code="401" reason="Unauthorized" />
+				<set-header name="WWW-Authenticate" exists-action="override">
+					<value>Bearer error="invalid_token"</value>
+				</set-header>
+				<set-body>{"error":"Authorization failed"}</set-body>
+			</return-response>
+		</when>
+	</choose>
+</fragment>

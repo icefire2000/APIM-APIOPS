@@ -1,0 +1,76 @@
+openapi: 3.0.1
+info:
+  title: apim-mock-webEAM
+  description: webEAM
+  version: v2
+servers:
+  - url: https://sam-apim-cnn3-int.azure-api.cn/m2m/v2
+paths:
+  /mockresult:
+    get:
+      summary: general-m2m
+      operationId: general-m2m
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              example:
+                Authorization: OK
+  /mockuserinfo:
+    get:
+      summary: general-m2m-userinfo
+      operationId: general-m2m-userinfo
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              example:
+                Authorization: OK
+  /mockresultcached:
+    get:
+      summary: general-m2m-cache
+      operationId: 68a7ed4661044db8e8540867
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              example:
+                Authorization: OK
+  /health:
+    get:
+      summary: health
+      operationId: 68a7f9da34dddaebc8b4746c
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              example:
+                Authorization: OK
+  /healthcheck:
+    get:
+      summary: healthcheck
+      operationId: 68a821715a23cc4b20e700dd
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              example:
+                Authorization: OK
+components:
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: subscription-key
+      in: query
+security:
+  - apiKeyHeader: [ ]
+  - apiKeyQuery: [ ]

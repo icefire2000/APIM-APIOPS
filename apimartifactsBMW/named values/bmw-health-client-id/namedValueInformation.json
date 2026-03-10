@@ -1,0 +1,10 @@
+{
+  "properties": {
+    "displayName": "bmw-health-client-id",
+    "keyVault": {
+      "secretIdentifier": "https://sam-apim-kv-cnn3-int.vault.azure.cn/secrets/bmw-health-client-id"
+    },
+    "secret": true,
+    "tags": []
+  }
+}

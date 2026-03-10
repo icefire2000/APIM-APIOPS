@@ -1,37 +1,6 @@
 # Note: With the introduction of workspaces we recommend using workspaces with APIOps when possible to limit what can be extracted whenever possible. 
 # More information about workspaces can be found here https://learn.microsoft.com/en-us/azure/api-management/workspaces-overview
 
- apiNames:
-  - test
-
- backendNames:
-#   - backendName1
-#   - backendName2
-
- diagnosticNames:
-#  - diagnosticName1
-#  - diagnosticName2
-
- loggerNames:
-#   - loggerName1
-#   - loggerName2
-
- namedValueNames:
-#   - namedValueName1
-#   - namedValueName2
-
- productNames:
-#   - productName1
-#   - productName2
-
- subscriptionNames:
-#  - subscriptionName1
-#  - subscriptionName2
-
- tagNames:
-#   - tagName1
-#   - tagName2
-  
- policyFragmentNames:
-#   - policyFragment1
-#   - policyFragment2
+subscriptionNames:
+  - 699c7b1e2b87dc0051070001
+  - 699c7b1e2b87dc0051070002

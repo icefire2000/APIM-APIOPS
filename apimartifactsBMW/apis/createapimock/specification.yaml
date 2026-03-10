@@ -1,0 +1,21 @@
+openapi: 3.0.1
+info:
+  title: apiname1463
+  description: apidescription5200
+  version: '1.0'
+servers:
+  - url: https://sam-apim-cnn3-int.azure-api.cn/newapiPath
+paths: { }
+components:
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: header4520
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: query3037
+      in: query
+security:
+  - apiKeyHeader: [ ]
+  - apiKeyQuery: [ ]

@@ -1,0 +1,9 @@
+{
+  "properties": {
+    "displayName": "Logger-Credentials--68ca37e867ce4217e0d7ed91",
+    "keyVault": {
+      "secretIdentifier": "https://sam-apim-kv-cnn3-int.vault.azure.cn/secrets/Logger-Credentials-azureEventHub"
+    },
+    "secret": true
+  }
+}

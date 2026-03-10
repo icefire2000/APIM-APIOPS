@@ -1,0 +1,117 @@
+openapi: 3.0.1
+info:
+  title: BPM OpenAPI Services
+  description: BPM OpenAPI Services
+  version: '1.0'
+servers:
+  - url: https://sam-apim-cnn3-int.azure-api.cn/petstore
+paths:
+  /api/openapi/v2/common/model_data_modify:
+    post:
+      summary: 表单模型更新
+      description: 表单模型更新
+      operationId: post-api-openapi-v2-common-model_data_modify
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/common/model_data_query:
+    post:
+      summary: 表单模型查询
+      description: 表单模型查询
+      operationId: post-api-openapi-v2-common-model_data_query
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/workflow/get_instance_baseinfo:
+    post:
+      summary: 获取流程实例基本信息、待办信息
+      description: 获取流程实例基本信息、待办信息
+      operationId: post-api-openapi-v2-workflow-get_instance_baseinfo
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/workflow/get_instance_formdata:
+    post:
+      summary: 获取表单数据
+      description: 获取表单数据
+      operationId: post-api-openapi-v2-workflow-get_instance_formdata
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/workflow/get_task_list:
+    post:
+      summary: 获取任务列表
+      description: 获取任务列表
+      operationId: post-api-openapi-v2-workflow-get_task_list
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/workflow/get_workflow_list:
+    post:
+      summary: 获取流程列表
+      description: 获取流程列表
+      operationId: post-api-openapi-v2-workflow-get_workflow_list
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/workflow/list_approvals_comments:
+    post:
+      summary: 获取审批日志
+      description: 获取审批日志
+      operationId: post-api-openapi-v2-workflow-list_approvals_comments
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/workflow/start_workflow:
+    post:
+      summary: 发起流程
+      description: 发起流程
+      operationId: post-api-openapi-v2-workflow-start_workflow
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/workflow/sync_engine_task_result:
+    post:
+      summary: 审批待办
+      description: 审批待办
+      operationId: post-api-openapi-v2-workflow-sync_engine_task_result
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/oss/upload/signurl:
+    post:
+      summary: 获取上传signURL信息
+      description: 获取上传signURL信息
+      operationId: post-api-openapi-v2-oss-upload-signurl
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/oss/upload/success:
+    post:
+      summary: 通知NewBPM上传成功
+      description: 通知NewBPM上传成功
+      operationId: post-api-openapi-v2-oss-upload-success
+      responses:
+        '200':
+          description: Success
+  /api/openapi/v2/oss/download/signurl:
+    post:
+      summary: 获取下载附件signUrl信息
+      description: 获取下载附件signUrl信息
+      operationId: post-api-openapi-v2-oss-download-signurl
+      responses:
+        '200':
+          description: Success
+components:
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: subscription-key
+      in: query
+security:
+  - apiKeyHeader: [ ]
+  - apiKeyQuery: [ ]

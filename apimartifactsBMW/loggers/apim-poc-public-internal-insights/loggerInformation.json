@@ -1,0 +1,10 @@
+{
+  "properties": {
+    "loggerType": "applicationInsights",
+    "credentials": {
+      "instrumentationKey": "{{Logger-Credentials--689d640e5ddd171458f62b11}}"
+    },
+    "isBuffered": true,
+    "resourceId": "/subscriptions/7291a0ca-0ee6-4c9f-92c4-8dd8f20533ae/resourceGroups/RG-APIManagement-CNN3-INT/providers/microsoft.insights/components/APIM-PoC-public-internal-Insights"
+  }
+}

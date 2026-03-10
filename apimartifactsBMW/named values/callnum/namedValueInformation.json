@@ -1,0 +1,9 @@
+{
+  "properties": {
+    "displayName": "callnum",
+    "keyVault": {
+      "secretIdentifier": "https://sam-apim-kv-cnn3-int.vault.azure.cn/secrets/nameValueCallnum"
+    },
+    "secret": true
+  }
+}
