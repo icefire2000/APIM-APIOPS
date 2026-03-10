@@ -7,6 +7,7 @@
 <policies>
 	<!-- Throttle, authorize, validate, cache, or transform the requests -->
 	<!-- 123456 -->
+	<!-- 123456 -->
 	<inbound>
 		<base />
 	</inbound>
