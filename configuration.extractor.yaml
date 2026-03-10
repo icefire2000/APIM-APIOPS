@@ -4,9 +4,8 @@
  apiNames:
   - test
 
-#  backendNames:
-#   - backendName1
-#   - backendName2
+ backendNames:
+  - ignore
 
  diagnosticNames:
  - ignore
