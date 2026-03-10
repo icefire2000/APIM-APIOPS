@@ -2,29 +2,28 @@
 # More information about workspaces can be found here https://learn.microsoft.com/en-us/azure/api-management/workspaces-overview
 
  apiNames:
-  - test
+  -test
 
-#  backendNames:
-#   - backendName1
-#   - backendName2
+ backendNames:
+  -ignore
 
  diagnosticNames:
- - ignore
+  -ignore
 
  loggerNames:
-  - ignore
+  -ignore
 
  namedValueNames:
-  - ignore
+  -ignore
  productNames:
-  - ignore
+  -ignore
 
  subscriptionNames:
-  - 699c7b1e2b87dc0051070001
+  -699c7b1e2b87dc0051070001
 
  tagNames:
-  - ignore
+  -ignore
   
  policyFragmentNames:
-  - ignore
+  -ignore
 

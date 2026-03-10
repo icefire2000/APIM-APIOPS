@@ -1,9 +1,0 @@
-{
-  "properties": {
-    "displayName": "cache-aws-beijing-connection-689c410e5ddd171458f62b09",
-    "keyVault": {
-      "secretIdentifier": "https://sam-apim-kv-cnn3-int.vault.azure.cn/secrets/cache-aws-beijing-connection"
-    },
-    "secret": true
-  }
-}

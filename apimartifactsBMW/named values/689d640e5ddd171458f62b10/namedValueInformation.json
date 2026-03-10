@@ -1,9 +1,0 @@
-{
-  "properties": {
-    "displayName": "Logger-Credentials--689d640e5ddd171458f62b11",
-    "keyVault": {
-      "secretIdentifier": "https://sam-apim-kv-cnn3-int.vault.azure.cn/secrets/Logger-Credentials-applicationInsights"
-    },
-    "secret": true
-  }
-}
