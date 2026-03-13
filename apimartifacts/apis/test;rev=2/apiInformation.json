@@ -1,11 +1,10 @@
 {
   "properties": {
     "path": "",
-    "apiRevision": "3",
-    "apiRevisionDescription": "r3",
+    "apiRevision": "2",
+    "apiRevisionDescription": "r2",
     "authenticationSettings": {},
     "description": "",
-    "isCurrent": true,
     "displayName": "test",
     "protocols": [
       "https"
