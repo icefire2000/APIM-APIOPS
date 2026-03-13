@@ -14,6 +14,14 @@ paths:
       responses:
         '202':
           description: ''
+  /clone-69b3b/gettest:
+    get:
+      summary: get (clone)
+      description: get
+      operationId: 69b3b8365882a4a9e5893e00
+      responses:
+        '202':
+          description: ''
 components:
   securitySchemes:
     apiKeyHeader:
