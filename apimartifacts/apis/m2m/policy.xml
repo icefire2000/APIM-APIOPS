@@ -7,9 +7,6 @@
 <policies>
 	<!-- Throttle, authorize, validate, cache, or transform the requests -->
 	<inbound>
-		<!-- test -->
-		<!-- test2 -->
-		<!-- test2 -->
 		<base />
 	</inbound>
 	<!-- Control if and how the requests are forwarded to services  -->
@@ -22,6 +19,7 @@
 	</outbound>
 	<!-- Handle exceptions and customize error responses  -->
 	<on-error>
+		<include-fragment fragment-id="GeneralErrorHandling" />
 		<base />
 	</on-error>
 </policies>
