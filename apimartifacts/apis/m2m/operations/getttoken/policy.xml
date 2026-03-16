@@ -1,0 +1,23 @@
+<policies>
+	<inbound>
+		<base />
+		<set-method>POST</set-method>
+		<set-header name="Content-Type" exists-action="override">
+			<value>application/x-www-form-urlencoded</value>
+		</set-header>
+		<set-body>@{  
+            return "client_secret=fuq2odq05V3ENntLHIH6WE5HkiZphf0POBd9ac7L&client_id=d877e1cd-b2a8-48e1-9188-9dc3796aa842&grant_type=client_credentials&scope=machine2machine";  
+        }</set-body>
+		<set-backend-service base-url="https://auth-i.bmwgroup.net" />
+		<rewrite-uri template="/auth/oauth2/realms/root/realms/machine2machine/access_token" />
+	</inbound>
+	<backend>
+		<forward-request />
+	</backend>
+	<outbound>
+		<base />
+	</outbound>
+	<on-error>
+		<base />
+	</on-error>
+</policies>
